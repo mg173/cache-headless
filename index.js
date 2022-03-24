@@ -5,6 +5,7 @@ puppeteer.use(AdblockerPlugin())
 const workerpool = require('workerpool');
 const sleep = require('sleep-promise');
 const Sitemapper = require('sitemapper');
+const utils = require(__dirname + '/utils.js');
 
 const DEBUG = false;
 const TIME_BETWEEN_PAGES = DEBUG ? 500 : 2000;
@@ -32,7 +33,7 @@ async function warmSites(sites) {
     }
     await Promise.all(allRequests); // wait as long as needed for all requests
   } catch (e) {
-    console.error(`${(new Date).toISOString()} error [${e}]`);
+    utils.elog('error warmSites', e);
   } finally {
     await pool.terminate(true);
   }
@@ -49,7 +50,7 @@ function shuffle(array) {
 
 async function warmSitemap() {
   const startTime = new Date();
-  console.log(`[${(new Date).toISOString()}] start whole sitemap`);
+  utils.log('start whole sitemap');
 
   const sites = await getSitemap()
   const shuffledSites = shuffle(sites);
@@ -57,7 +58,7 @@ async function warmSitemap() {
 
   const endTime = new Date();
   const duration = (endTime - startTime) / 1000;
-  console.log(`[${(new Date).toISOString()}] whole sitemap complete. duration [${duration}]`);
+  utils.log('finish whole sitemap', duration);
 }
 
 async function main() {
@@ -65,7 +66,7 @@ async function main() {
     const now = new Date().getHours();
     if (now >= 22 && now <= 10) {
       // between 10pm and 10am
-      console.log(`[${(new Date).toISOString()}] sleeping`);
+      utils.log('sleeping');
       sleep(1000 * 60 * 10); // 10 minutes
     } else {
       await warmSitemap();
