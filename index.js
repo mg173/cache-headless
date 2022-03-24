@@ -6,7 +6,7 @@ const workerpool = require('workerpool');
 const sleep = require('sleep-promise');
 const Sitemapper = require('sitemapper');
 
-const DEBUG = true;
+const DEBUG = false;
 const TIME_BETWEEN_PAGES = DEBUG ? 500 : 2000;
 
 async function getSitemap() {
@@ -34,7 +34,7 @@ async function warmSites(sites) {
   } catch (e) {
     console.error(`${(new Date).toISOString()} error [${e}]`);
   } finally {
-    pool.terminate(true);
+    await pool.terminate(true);
   }
 }
 
@@ -61,7 +61,7 @@ async function warmSitemap() {
 }
 
 async function main() {
-  while(true) {
+  do {
     const now = new Date().getHours();
     if (now >= 22 && now <= 10) {
       // between 10pm and 10am
@@ -70,7 +70,7 @@ async function main() {
     } else {
       await warmSitemap();
     }
-  }
+  } while (!DEBUG)
 }
 
 main()
