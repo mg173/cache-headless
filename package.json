@@ -9,6 +9,7 @@
   "author": "mkg",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.26.1",
     "puppeteer": "^13.5.1",
     "puppeteer-extra": "^3.2.3",
     "puppeteer-extra-plugin-adblocker": "^2.12.0",

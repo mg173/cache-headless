@@ -5,9 +5,11 @@ puppeteer.use(AdblockerPlugin())
 const workerpool = require('workerpool');
 const sleep = require('sleep-promise');
 const Sitemapper = require('sitemapper');
+const axios = require('axios');
+
 const utils = require(__dirname + '/utils.js');
 
-const DEBUG = false;
+const DEBUG = true;
 const TIME_BETWEEN_PAGES = DEBUG ? 500 : 2000;
 
 async function getSitemap() {
@@ -61,16 +63,33 @@ async function warmSitemap() {
   utils.log('finish whole sitemap', duration);
 }
 
+async function getLatestCommit() {
+  const res = await axios.get('https://api.github.com/repos/getdispute/pineapple-web/commits/production?per_page=1', {
+    auth: {
+      username: 'mg173',
+      password: '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',
+    }
+  });
+  return res?.data?.sha;
+}
+
 async function main() {
+  var lastCommitFound = null;
   do {
     const now = new Date().getHours();
     if (now >= 22 && now <= 10) {
       // between 10pm and 10am
-      utils.log('sleeping');
-      sleep(1000 * 60 * 10); // 10 minutes
-    } else {
-      await warmSitemap();
+      utils.log('sleeping night time');
+      sleep(1000 * 60 * 100); 
     }
+    const latestCommit = await getLatestCommit();
+    if (latestCommit === lastCommitFound) {
+      utils.log('sleeping no changes');
+      await sleep(1000 * 60 * 10);
+    }
+    utils.log('found change, start warming');
+    await warmSitemap();
+    lastCommitFound = latestCommit;
   } while (!DEBUG)
 }
 

@@ -23,9 +23,9 @@ async function newPage(browser) {
   return page;
 }
 
-function logResponseHeaders(response) {
+function logResponseHeaders(pageUrl, response) {
   const headers = response.headers();
-  utils.log('response header', 'x-vercel-cache', headers['x-vercel-cache']);
+  utils.log('response header', pageUrl, 'x-vercel-cache', headers['x-vercel-cache']);
 }
 
 async function warmPage(pageUrl) {
@@ -35,7 +35,7 @@ async function warmPage(pageUrl) {
   const page = await newPage(browser);
   try {
     const response = await page.goto(pageUrl);
-    logResponseHeaders(response);
+    logResponseHeaders(pageUrl, response);
     await page.waitForNetworkIdle();
   } catch (e) {
     utils.elog('error page.goto', pageUrl, e);
