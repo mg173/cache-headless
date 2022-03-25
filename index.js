@@ -9,8 +9,9 @@ const axios = require('axios');
 
 const utils = require(__dirname + '/utils.js');
 
-const DEBUG = true;
-const TIME_BETWEEN_PAGES = DEBUG ? 500 : 2000;
+const DEBUG = false;
+const TIME_BETWEEN_PAGES = DEBUG ? 500 : 1000;
+const NUM_WORKERS = 25;
 
 async function getSitemap() {
   const sitemap = new Sitemapper();
@@ -22,7 +23,7 @@ async function getSitemap() {
 async function warmSites(sites) {
   const pool = workerpool.pool(__dirname + '/worker-warmer.js', {
     minWorkers: 'max',
-    maxWorkers: 7,
+    maxWorkers: NUM_WORKERS,
   });
   try {
     const allRequests = [];
