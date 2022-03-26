@@ -16,8 +16,13 @@ async function newPage(browser) {
   const page = await browser.newPage();
   page.setRequestInterception(true);
   page.on('request', (request) => {
+    if (request._interceptionHandled) {
+      return;
+    }
     if (request.url().includes('a.getdispute.com')) {
-      request.abort();
+      request.abort('failed', 0);
+    } else {
+      request.continue(request.continueRequestOverrides(), 0);
     }
   });
   return page;
@@ -34,8 +39,11 @@ async function warmPage(pageUrl) {
   const browser = await newBrowser();
   const page = await newPage(browser);
   try {
+    const networkStartTime = new Date();
     const response = await page.goto(pageUrl);
+    const networkEndTime = new Date();
     logResponseHeaders(pageUrl, response);
+    utils.log('network first response time', (networkEndTime-networkStartTime)/100);
     await page.waitForNetworkIdle();
   } catch (e) {
     utils.elog('error page.goto', pageUrl, e);
