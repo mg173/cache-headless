@@ -13,6 +13,12 @@ const DEBUG = false;
 const TIME_BETWEEN_PAGES = DEBUG ? 500 : 500;
 const NUM_WORKERS = 25;
 
+const pool = workerpool.pool(__dirname + '/worker-warmer.js', {
+  minWorkers: 'max',
+  maxWorkers: NUM_WORKERS,
+  workerType: 'process',
+});
+
 async function getSitemap() {
   const sitemap = new Sitemapper();
   const sitemapResult = await sitemap.fetch('https://getdispute.com/sitemap.xml');
@@ -21,11 +27,6 @@ async function getSitemap() {
 }
 
 async function warmSites(sites) {
-  const pool = workerpool.pool(__dirname + '/worker-warmer.js', {
-    minWorkers: 'max',
-    maxWorkers: NUM_WORKERS,
-    workerType: 'process',
-  });
   try {
     const allRequests = [];
     for (var i = 0; i < (DEBUG ? 3 : sites.length); i++) {
@@ -76,6 +77,9 @@ async function getLatestCommit() {
 }
 
 async function main() {
+
+  process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
   var lastCommitFound = null;
   do {
     const now = new Date().getHours();
@@ -93,6 +97,10 @@ async function main() {
     await warmSitemap();
     lastCommitFound = latestCommit;
   } while (!DEBUG)
+}
+
+async function exitHandler(options, exitCode) {
+  await pool.terminate(true);
 }
 
 main()
